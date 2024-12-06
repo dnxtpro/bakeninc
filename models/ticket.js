@@ -4,6 +4,25 @@ const mysql = require('mysql2');
 const connection = mysql.createConnection(dbConfig);
 const moment = require('moment');
 
+    const updateTicket = (id, estado) => {
+        console.log(id, estado);
+    
+        return new Promise((resolve, reject) => {
+            const query = 'UPDATE ticket SET state = ? WHERE id = ?';
+            const values = [estado, id];
+    
+            connection.query(query, values, (err, result) => {
+                if (err) {
+                    console.error('Error en la consulta de actualización:', err);
+                    reject(err); // Reject the promise with the error
+                } else {
+                    console.log('Ticket actualizado exitosamente:', result);
+                    resolve(result); // Resolve the promise with the result
+                }
+            });
+        });
+    };
+    
 
 const insert = ({ title, description, userId }) => {
     const time = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -38,4 +57,5 @@ const get=()=>{
 module.exports ={
 insert:insert,
 get:get,
+updateTicket:updateTicket
 }

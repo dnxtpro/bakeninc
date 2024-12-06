@@ -361,6 +361,30 @@ router.delete('/delete-user/:id',middleware.checkToken,async(req,res)=>{
 
   }
   });
+  router.put('/edit-ticket/:id',middleware.checkToken,async(req,res)=>{
+    const userId = req.userId
+    users.updateLastChange(userId);
+    console.log('llamada recibida 123',userId)
+    const id = parseInt(req.params.id,10);
+    const {estado}=req.body;
+    
+      // Asegúrate de validar el estado y ticketId según tus necesidades
+      if (!estado || isNaN(id)) {
+        return res.status(400).json({ message: 'Datos inválidos' });
+      }
+      try{
+        const result =await ticket.updateTicket(id,estado);
+
+       if (result.rowCount > 0) {
+      return res.status(200).json({ message: 'Estado actualizado con éxito' });
+    } else {
+      return res.status(404).json({ message: 'Ticket no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al actualizar el estado', error);
+    return res.status(500).json({ message: 'Error al actualizar el estado' });
+  }
+  })
 
 
 module.exports = router;

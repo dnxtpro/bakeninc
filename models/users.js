@@ -34,11 +34,11 @@ const saveTokenInDB = (token, userId, creationTime) => {
     });
 };
 
-const edit =({id,username,email,userrole,empresa})=>{
+const edit =({id,username,email,roleName,nombre})=>{
    
-    console.log(username,email,userrole,empresa,'editar usuario:')
+    console.log(username,email,roleName,nombre,'editar usuario:')
     return new Promise((resolve,reject)=>{
-        connection.query(`UPDATE users SET username =?,email=?,userrole=?,empresa=? WHERE id=?`,[username,email,userrole,empresa,id],(err,result)=>{
+        connection.query(`UPDATE users SET username =?,email=?,userrole=?,empresa=? WHERE id=?`,[username,email,roleName,nombre,id],(err,result)=>{
             if(err) resolve(err)
             if(result){
                 resolve(result)
@@ -104,18 +104,37 @@ const borrar=(id)=>{
     });
 };
 const updateLastChange = (userId) => {
-    console.log('id para guadar la fecha:',userId)
+    console.log('id para guardar la fecha:', userId);
     const lastChangeTime = moment().format('YYYY-MM-DD HH:mm:ss');
-    connection.query(`UPDATE registro SET lastchange = ? WHERE userId = ?`, [lastChangeTime, userId], (error, results) => {
+
+    // First, find the row with the latest creationDate for the given userId
+    const findLatestRowQuery = `SELECT id FROM registro WHERE userId = ? ORDER BY creationtime DESC LIMIT 1`;
+
+    connection.query(findLatestRowQuery, [userId], (error, results) => {
         if (error) {
-            console.error('Error al actualizar la última fecha de modificación:', error);
-        } else {
-            console.log('Última fecha de modificación actualizada en la base de datos',lastChangeTime);
+            console.error('Error al buscar la fila más reciente:', error);
+            return;
         }
+
+        if (results.length === 0) {
+            console.log('No se encontraron filas para el userId:', userId);
+            return;
+        }
+
+        const latestRowId = results[0].id;
+
+        // Now update the lastchange field of the found row
+        const updateLastChangeQuery = `UPDATE registro SET lastchange = ? WHERE id = ?`;
+
+        connection.query(updateLastChangeQuery, [lastChangeTime, latestRowId], (error, results) => {
+            if (error) {
+                console.error('Error al actualizar la última fecha de modificación:', error);
+            } else {
+                console.log('Última fecha de modificación actualizada en la base de datos', lastChangeTime);
+            }
+        });
     });
 };
-
-
 
 module.exports ={
     getAll: getAll,
